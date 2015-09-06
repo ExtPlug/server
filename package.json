@@ -1,0 +1,29 @@
+{
+  "name": "extplug-server",
+  "version": "0.0.0",
+  "description": "Server for proxying and other stuff for ExtPlug.",
+  "license": "MIT",
+  "repository": "ExtPlug/server",
+  "keywords": [
+    "extplug"
+  ],
+
+  "homepage": "https://extplug.com",
+  "author": "René Kooi",
+
+  "main": "index.js",
+  "dependencies": {
+    "body-parser": "^1.13.3",
+    "cors": "^2.7.1",
+    "express": "^4.13.0",
+    "express-session": "^1.11.3",
+    "request": "^2.58.0"
+  },
+  "devDependencies": {
+    "babel": "^5.8.23"
+  },
+  "scripts": {
+    "build": "babel --out-dir lib src",
+    "test": "mocha"
+  }
+}
