@@ -7,10 +7,8 @@
   "keywords": [
     "extplug"
   ],
-
   "homepage": "https://extplug.com",
   "author": "René Kooi",
-
   "main": "index.js",
   "dependencies": {
     "body-parser": "^1.13.3",
@@ -20,10 +18,15 @@
     "request": "^2.58.0"
   },
   "devDependencies": {
-    "babel": "^5.8.23"
+    "babel": "^5.8.23",
+    "eslint": "^3.5.0",
+    "eslint-config-airbnb-base": "^7.1.0",
+    "eslint-plugin-import": "^1.15.0"
   },
   "scripts": {
     "build": "babel --out-dir lib src",
-    "test": "mocha"
+    "lint": "eslint .",
+    "test": "mocha",
+    "postinstall": "npm run build"
   }
 }
