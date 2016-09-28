@@ -11,6 +11,7 @@ app.use(require('body-parser').json());
 app.use(require('express-session')({ secret: 'secret' }));
 
 app.use('/rs', require('./room-settings-proxy'));
+app.use('/plugins', require('./plugins')());
 
 app.listen(PORT, () => {
   console.info(`listening on ${PORT}`);

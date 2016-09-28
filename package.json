@@ -18,7 +18,9 @@
     "cors": "^2.7.1",
     "express": "^4.13.0",
     "express-session": "^1.11.3",
-    "request": "^2.58.0"
+    "npm-keyword": "^4.2.0",
+    "request": "^2.75.0",
+    "router": "^1.1.4"
   },
   "devDependencies": {
     "eslint": "^3.5.0",
