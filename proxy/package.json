@@ -1,0 +1,15 @@
+{
+  "name": "@extplug/cors-proxy",
+  "version": "0.0.0",
+  "description": "The default ExtPlug CORS Proxy.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "Renée Kooi <renee@kooi.me>",
+  "license": "MIT",
+  "dependencies": {
+    "cors-anywhere": "^0.4.0"
+  }
+}
