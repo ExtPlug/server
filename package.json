@@ -1,34 +1,13 @@
 {
+  "private": true,
   "name": "extplug-server",
   "version": "0.0.0",
-  "description": "Server for proxying and other stuff for ExtPlug.",
-  "license": "MIT",
-  "repository": "ExtPlug/server",
-  "keywords": [
-    "extplug"
-  ],
-  "homepage": "https://extplug.com",
-  "author": "René Kooi",
-  "main": "index.js",
-  "engines": {
-    "node": ">= 4"
-  },
-  "dependencies": {
-    "body-parser": "^1.13.3",
-    "cors": "^2.7.1",
-    "express": "^4.13.0",
-    "express-session": "^1.11.3",
-    "request": "^2.58.0"
-  },
   "devDependencies": {
     "eslint": "^3.5.0",
     "eslint-config-airbnb-base": "^7.1.0",
     "eslint-plugin-import": "^1.15.0"
   },
   "scripts": {
-    "build": "babel --out-dir lib src",
-    "lint": "eslint .",
-    "test": "mocha",
-    "postinstall": "npm run build"
+    "lint": "eslint ."
   }
 }
