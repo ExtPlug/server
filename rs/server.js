@@ -1,5 +1,5 @@
 const gh = require('gh-got')
-const pify = require('pify')
+const stringify = require('json-stringify-pretty-compact')
 const { json, send } = require('micro')
 const { authenticator, authRoute } = require('plug-auth-server')
 
@@ -53,7 +53,7 @@ async function saveRoomSettings (room, user, settings) {
         name: 'ExtPlug Bot',
         email: 'd@extplug.com'
       },
-      content: Buffer.from(JSON.stringify(settings), 'utf8').toString('base64')
+      content: Buffer.from(stringify(settings), 'utf8').toString('base64')
     }
   })
 
