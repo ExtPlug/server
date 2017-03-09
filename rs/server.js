@@ -50,7 +50,9 @@ async function saveRoomSettings (room, user, settings) {
     token: ghToken,
     method: 'PUT',
     body: {
-      message: `Update room settings for https://plug.dj/${room}.`,
+      message: existingSha
+        ? `Update room settings for https://plug.dj/${room}.`
+        : `Create room settings for https://plug.dj/${room}.`,
       author: {
         name: user.username,
         email: `user.${user.id}@extplug.com`
