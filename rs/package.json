@@ -1,0 +1,18 @@
+{
+  "name": "@extplug/room-settings",
+  "version": "1.0.0",
+  "description": "The ExtPlug room settings server.",
+  "main": "server.js",
+  "scripts": {
+    "start": "micro server.js"
+  },
+  "keywords": [],
+  "author": "Renée Kooi <renee@kooi.me>",
+  "license": "MIT",
+  "dependencies": {
+    "gh-got": "^5.0.0",
+    "micro": "^7.1.0",
+    "pify": "^2.3.0",
+    "plug-auth-server": "^1.1.0"
+  }
+}
