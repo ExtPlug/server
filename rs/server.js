@@ -1,4 +1,5 @@
 const gh = require('gh-got')
+const got = require('got')
 const stringify = require('json-stringify-pretty-compact')
 const { json, send } = require('micro')
 const { authenticator, authRoute } = require('plug-auth-server')
@@ -66,13 +67,20 @@ async function saveRoomSettings (room, user, settings) {
   return { url: `https://rawgit.com/${ghRepo}/master/${filename}` }
 }
 
+async function getRoomSettings (room) {
+  const url = `https://raw.githubusercontent.com/${ghRepo}/master/${room}/settings.json`
+
+  const response = await got(url, { json: true })
+  return response.body
+}
+
 module.exports = async (req, res) => {
   cors(req, res)
   if (req.method === 'OPTIONS') {
     return send(res, 204, null)
   }
 
-  const params = await json(req)
+  const params = req.body ? await json(req) : {}
   if (req.url === '/auth') {
     return tryAuthenticate(params, req, res)
   }
@@ -90,5 +98,11 @@ module.exports = async (req, res) => {
     const result = await saveRoomSettings(roomName, user, params)
 
     return send(res, 200, result)
+  }
+
+  if (req.method === 'GET') {
+    const roomName = req.url.slice(1)
+
+    return getRoomSettings(roomName)
   }
 }
