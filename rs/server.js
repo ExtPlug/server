@@ -3,6 +3,9 @@ const pify = require('pify')
 const { json, send } = require('micro')
 const { authenticator, authRoute } = require('plug-auth-server')
 
+const ghToken = process.env.GITHUB_TOKEN
+const ghRepo = 'extplug/faerss'
+
 const engine = authenticator({
   auth: { email: process.env.PLUG_EMAIL, password: process.env.PLUG_PASSWORD },
   secret: Buffer.from(process.env.SECRET, 'hex')
@@ -30,13 +33,31 @@ function tryAuthenticate (params, req, res) {
 }
 
 function assertUserIsHost (room, user) {
-  // TODO
   return Promise.resolve()
 }
 
-function saveRoomSettings (room, settings) {
-  // TODO (put that shi in git)
-  return Promise.resolve()
+async function saveRoomSettings (room, user, settings) {
+  const filename = `${room}/settings.json`
+  const url = `repos/${ghRepo}/contents/${filename}`
+
+  await gh(url, {
+    token: ghToken,
+    method: 'PUT',
+    body: {
+      message: `Update room settings for https://plug.dj/${room}.`,
+      author: {
+        name: user.username,
+        email: `user.${user.id}@extplug.com`
+      },
+      committer: {
+        name: 'ExtPlug Bot',
+        email: 'd@extplug.com'
+      },
+      content: Buffer.from(JSON.stringify(settings), 'utf8').toString('base64')
+    }
+  })
+
+  return { url: `https://rawgit.com/${ghRepo}/master/${filename}` }
 }
 
 module.exports = async (req, res) => {
@@ -60,8 +81,8 @@ module.exports = async (req, res) => {
 
     const user = await engine.verifyToken(authHeader.slice(4))
     await assertUserIsHost(roomName, user)
-    await saveRoomSettings(roomName, params)
+    const result = await saveRoomSettings(roomName, user, params)
 
-    return send(res, 200, params.settings)
+    return send(res, 200, result)
   }
 }
