@@ -40,6 +40,11 @@ async function saveRoomSettings (room, user, settings) {
   const filename = `${room}/settings.json`
   const url = `repos/${ghRepo}/contents/${filename}`
 
+  const existingSha = await gh(url).then((response) => {
+    if (response.body.type === 'file') return response.body.sha
+    throw new Error('Invalid repository state. Please poke @ReAnna in the plug.dj Discord.')
+  }, () => undefined)
+
   await gh(url, {
     token: ghToken,
     method: 'PUT',
@@ -53,7 +58,8 @@ async function saveRoomSettings (room, user, settings) {
         name: 'ExtPlug Bot',
         email: 'd@extplug.com'
       },
-      content: Buffer.from(stringify(settings), 'utf8').toString('base64')
+      content: Buffer.from(stringify(settings), 'utf8').toString('base64'),
+      sha: existingSha
     }
   })
 
