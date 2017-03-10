@@ -1,7 +1,9 @@
+const path = require('path')
 const gh = require('gh-got')
 const got = require('got')
 const stringify = require('json-stringify-pretty-compact')
-const { json, send } = require('micro')
+const body = require('raw-body')
+const { json, send, createError } = require('micro')
 const { authenticator, authRoute } = require('plug-auth-server')
 const HostChecker = require('./HostChecker')
 
@@ -12,6 +14,9 @@ const engine = authenticator({
   auth: { email: process.env.PLUG_EMAIL, password: process.env.PLUG_PASSWORD },
   secret: Buffer.from(process.env.SECRET, 'hex')
 })
+
+// Default room settings to use if a room host hasn't configured settings.
+const emptyRoomSettings = {}
 
 function cors (req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
@@ -39,22 +44,19 @@ function assertUserIsHost (room, user) {
   return hostChecker.push({ room, user })
 }
 
-async function saveRoomSettings (room, user, settings) {
-  const filename = `${room}/settings.json`
-  const url = `repos/${ghRepo}/contents/${filename}`
+async function saveFile (room, user, filename, contents, message) {
+  const url = `repos/${ghRepo}/contents/${room}/${filename}`
 
   const existingSha = await gh(url).then((response) => {
     if (response.body.type === 'file') return response.body.sha
     throw new Error('Invalid repository state. Please poke @ReAnna in the plug.dj Discord.')
   }, () => undefined)
 
-  await gh(url, {
+  const { body } = await gh(url, {
     token: ghToken,
     method: 'PUT',
     body: {
-      message: existingSha
-        ? `Update room settings for https://plug.dj/${room}.`
-        : `Create room settings for https://plug.dj/${room}.`,
+      message,
       author: {
         name: user.username,
         email: `user.${user.id}@extplug.com`
@@ -63,12 +65,22 @@ async function saveRoomSettings (room, user, settings) {
         name: 'ExtPlug Bot',
         email: 'd@extplug.com'
       },
-      content: Buffer.from(stringify(settings), 'utf8').toString('base64'),
+      content: Buffer.from(contents, 'utf8').toString('base64'),
       sha: existingSha
     }
   })
 
-  return { url: `https://rawgit.com/${ghRepo}/master/${filename}` }
+  return { sha: body.content.sha }
+}
+
+function saveRoomSettings (room, user, settings) {
+  return saveFile(room, user, 'settings.json', stringify(settings),
+    `Update room settings for https://plug.dj/${room}.`)
+}
+
+function saveRoomStyles (room, user, cssText) {
+  return saveFile(room, user, 'style.css', cssText,
+    `Update room styles for https://plug.dj/${room}.`)
 }
 
 async function getRoomSettings (room) {
@@ -76,6 +88,21 @@ async function getRoomSettings (room) {
 
   const response = await got(url, { json: true })
   return response.body
+}
+
+function getRoomStyles (room) {
+  const url = `https://raw.githubusercontent.com/${ghRepo}/master/${room}/style.css`
+
+  return got.stream(url)
+}
+
+const parseUrl = (url) => {
+  const ext = path.extname(url)
+  const roomName = url.slice(1)
+  if (ext) {
+    return { ext, roomName: path.parse(roomName).name }
+  }
+  return { roomName: roomName }
 }
 
 module.exports = async (req, res) => {
@@ -89,25 +116,47 @@ module.exports = async (req, res) => {
     return tryAuthenticate(params, req, res)
   }
 
+  const { ext, roomName } = parseUrl(req.url)
+
+  if (!roomName) {
+    return send(res, 404, null)
+  }
+
   if (req.method === 'PUT') {
-    const params = await json(req)
     const authHeader = req.headers.authorization
     if (!/^JWT /.test(authHeader)) {
       throw new Error('No authentication token received')
     }
 
-    const roomName = req.url.slice(1)
-
     const user = await engine.verifyToken(authHeader.slice(4))
     await assertUserIsHost(roomName, user)
+
+    if (ext === '.css') {
+      const css = await body(req)
+      const result = await saveRoomStyles(roomName, user, css)
+
+      return send(res, 200, result)
+    }
+    if (ext && ext !== '.json') {
+      throw createError(403, 'You can only store CSS and JSON files.')
+    }
+
+    const params = await json(req)
     const result = await saveRoomSettings(roomName, user, params)
 
     return send(res, 200, result)
   }
 
   if (req.method === 'GET') {
-    const roomName = req.url.slice(1)
+    if (ext === '.css') {
+      res.setHeader('content-type', 'text/css')
+      return getRoomStyles(roomName)
+    }
 
-    return getRoomSettings(roomName)
+    if (ext && ext !== '.json') {
+      throw createError(404, 'Not Found')
+    }
+
+    return getRoomSettings(roomName).catch(() => emptyRoomSettings)
   }
 }
