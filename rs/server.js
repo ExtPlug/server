@@ -56,7 +56,7 @@ async function saveFile (room, user, filename, contents, message) {
     token: ghToken,
     method: 'PUT',
     body: {
-      message,
+      message: `[${room}] ${message}\n\nhttps://plug.dj/${room}`,
       author: {
         name: user.username,
         email: `user.${user.id}@extplug.com`
@@ -75,12 +75,12 @@ async function saveFile (room, user, filename, contents, message) {
 
 function saveRoomSettings (room, user, settings) {
   return saveFile(room, user, 'settings.json', stringify(settings),
-    `Update room settings for https://plug.dj/${room}.`)
+    'Update room settings.')
 }
 
 function saveRoomStyles (room, user, cssText) {
   return saveFile(room, user, 'style.css', cssText,
-    `Update room styles for https://plug.dj/${room}.`)
+    'Update room styles.')
 }
 
 async function getRoomSettings (room) {
