@@ -1,6 +1,5 @@
 const path = require('path')
 const gh = require('gh-got')
-const got = require('got')
 const stringify = require('json-stringify-pretty-compact')
 const body = require('raw-body')
 const { json, send, createError } = require('micro')
@@ -84,16 +83,17 @@ function saveRoomStyles (room, user, cssText) {
 }
 
 async function getRoomSettings (room) {
-  const url = `https://raw.githubusercontent.com/${ghRepo}/master/${room}/settings.json`
+  const url = `repos/${ghRepo}/contents/${room}/settings.json`
 
-  const response = await got(url, { json: true })
-  return response.body
+  const { body } = await gh(url, { token: ghToken })
+  return JSON.parse(Buffer.from(body.content, 'base64').toString('utf8'))
 }
 
-function getRoomStyles (room) {
-  const url = `https://raw.githubusercontent.com/${ghRepo}/master/${room}/style.css`
+async function getRoomStyles (room) {
+  const url = `repos/${ghRepo}/contents/${room}/style.css`
 
-  return got.stream(url)
+  const { body } = await gh(url, { token: ghToken })
+  return Buffer.from(body.content, 'base64').toString('utf8')
 }
 
 const parseUrl = (url) => {
