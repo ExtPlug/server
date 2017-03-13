@@ -5,6 +5,7 @@ const body = require('raw-body')
 const { json, send, createError } = require('micro')
 const { authenticator, authRoute } = require('plug-auth-server')
 const HostChecker = require('./HostChecker')
+const compileCss = require('./compileCss')
 
 const ghToken = process.env.GITHUB_TOKEN
 const ghRepo = 'extplug/faerss'
@@ -77,9 +78,13 @@ function saveRoomSettings (room, user, settings) {
     'Update room settings.')
 }
 
-function saveRoomStyles (room, user, cssText) {
-  return saveFile(room, user, 'style.css', cssText,
+async function saveRoomStyles (room, user, cssText) {
+  const result = await compileCss(cssText)
+
+  await saveFile(room, user, 'style.css', cssText,
     'Update room styles.')
+  return saveFile(room, user, 'style.min.css', result.css,
+    'Update minified styles.')
 }
 
 async function getRoomSettings (room) {
@@ -90,6 +95,7 @@ async function getRoomSettings (room) {
 }
 
 async function getRoomStyles (room) {
+  // TODO use `.min.css` by default, except if source is requested
   const url = `repos/${ghRepo}/contents/${room}/style.css`
 
   const { body } = await gh(url, { token: ghToken })

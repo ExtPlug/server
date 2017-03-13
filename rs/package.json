@@ -10,11 +10,15 @@
   "author": "Renée Kooi <renee@kooi.me>",
   "license": "MIT",
   "dependencies": {
+    "cssnano": "^3.10.0",
     "gh-got": "^5.0.0",
     "json-stringify-pretty-compact": "^1.0.2",
     "micro": "^7.1.0",
     "miniplug": "^1.5.0",
     "plug-auth-server": "^1.1.0",
+    "postcss": "^5.2.16",
+    "postcss-cssnext": "^2.9.0",
+    "postcss-safe-parser": "^2.0.0",
     "raw-body": "^2.2.0"
   }
 }
