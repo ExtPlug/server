@@ -6,6 +6,7 @@ const { json, send, createError } = require('micro')
 const { authenticator, authRoute } = require('plug-auth-server')
 const HostChecker = require('./HostChecker')
 const compileCss = require('./compileCss')
+const commit = require('./commit')
 
 const ghToken = process.env.GITHUB_TOKEN
 const ghRepo = 'extplug/faerss'
@@ -44,47 +45,23 @@ function assertUserIsHost (room, user) {
   return hostChecker.push({ room, user })
 }
 
-async function saveFile (room, user, filename, contents, message) {
-  const url = `repos/${ghRepo}/contents/${room}/${filename}`
-
-  const existingSha = await gh(url).then((response) => {
-    if (response.body.type === 'file') return response.body.sha
-    throw new Error('Invalid repository state. Please poke @ReAnna in the plug.dj Discord.')
-  }, () => undefined)
-
-  const { body } = await gh(url, {
-    token: ghToken,
-    method: 'PUT',
-    body: {
-      message: `[${room}] ${message}\n\nhttps://plug.dj/${room}`,
-      author: {
-        name: user.username,
-        email: `user.${user.id}@extplug.com`
-      },
-      committer: {
-        name: 'ExtPlug Bot',
-        email: 'd@extplug.com'
-      },
-      content: Buffer.from(contents, 'utf8').toString('base64'),
-      sha: existingSha
-    }
-  })
-
-  return { sha: body.content.sha }
+function getCommitMessage(room, user, message) {
+  return `[${room}] ${message}\n\nhttps://plug.dj/${room}`
 }
 
 function saveRoomSettings (room, user, settings) {
-  return saveFile(room, user, 'settings.json', stringify(settings),
-    'Update room settings.')
+  return commit(user, getCommitMessage(room, user, 'Update room settings.'), [
+    { path: `${room}/settings.json`, content: stringify(settings) }
+  ])
 }
 
 async function saveRoomStyles (room, user, cssText) {
   const result = await compileCss(cssText)
 
-  await saveFile(room, user, 'style.css', cssText,
-    'Update room styles.')
-  return saveFile(room, user, 'style.min.css', result.css,
-    'Update minified styles.')
+  return commit(user, getCommitMessage(room, user, 'Update room styles.'), [
+    { path: `${room}/style.css`, content: cssText },
+    { path: `${room}/style.min.css`, content: result.css },
+  ])
 }
 
 async function getRoomSettings (room) {
@@ -138,7 +115,7 @@ module.exports = async (req, res) => {
     await assertUserIsHost(roomName, user)
 
     if (ext === '.css') {
-      const css = await body(req)
+      const css = await body(req, { encoding: 'utf-8' })
       const result = await saveRoomStyles(roomName, user, css)
 
       return send(res, 200, result)

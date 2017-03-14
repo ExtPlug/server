@@ -10,6 +10,7 @@
   "author": "Renée Kooi <renee@kooi.me>",
   "license": "MIT",
   "dependencies": {
+    "await-lock": "^1.1.2",
     "cssnano": "^3.10.0",
     "gh-got": "^5.0.0",
     "json-stringify-pretty-compact": "^1.0.2",
