@@ -1,4 +1,5 @@
 const path = require('path')
+const url = require('url')
 const gh = require('gh-got')
 const stringify = require('json-stringify-pretty-compact')
 const body = require('raw-body')
@@ -64,28 +65,24 @@ async function saveRoomStyles (room, user, cssText) {
   ])
 }
 
-async function getRoomSettings (room) {
-  const url = `repos/${ghRepo}/contents/${room}/settings.json`
-
-  const { body } = await gh(url, { token: ghToken })
-  return JSON.parse(Buffer.from(body.content, 'base64').toString('utf8'))
-}
-
-async function getRoomStyles (room) {
-  // TODO use `.min.css` by default, except if source is requested
-  const url = `repos/${ghRepo}/contents/${room}/style.css`
+async function getRoomFile (room, filename) {
+  const url = `repos/${ghRepo}/contents/${room}/${filename}`
 
   const { body } = await gh(url, { token: ghToken })
   return Buffer.from(body.content, 'base64').toString('utf8')
 }
 
-const parseUrl = (url) => {
-  const ext = path.extname(url)
-  const roomName = url.slice(1)
+const parseUrl = (reqUrl) => {
+  const parts = url.parse(reqUrl)
+  const ext = path.extname(parts.pathname)
+  const roomName = parts.pathname.slice(1)
   if (ext) {
-    return { ext, roomName: path.parse(roomName).name }
+    return Object.assign(parts, {
+      ext,
+      roomName: path.parse(roomName).name
+    })
   }
-  return { roomName: roomName }
+  return Object.assign(parts, { roomName: roomName })
 }
 
 module.exports = async (req, res) => {
@@ -99,7 +96,7 @@ module.exports = async (req, res) => {
     return tryAuthenticate(params, req, res)
   }
 
-  const { ext, roomName } = parseUrl(req.url)
+  const { ext, roomName, query } = parseUrl(req.url)
 
   if (!roomName) {
     return send(res, 404, null)
@@ -133,13 +130,16 @@ module.exports = async (req, res) => {
   if (req.method === 'GET') {
     if (ext === '.css') {
       res.setHeader('content-type', 'text/css')
-      return getRoomStyles(roomName)
+      return getRoomFile(roomName,
+        // reanna.css?source returns the full source. Otherwise, return the
+        // minified css.
+        query === 'source' ? 'style.css' : 'style.min.css')
     }
 
     if (ext && ext !== '.json') {
       throw createError(404, 'Not Found')
     }
 
-    return getRoomSettings(roomName).catch(() => emptyRoomSettings)
+    return getRoomFile(roomName, 'settings.json').then(JSON.parse)
   }
 }
