@@ -95,7 +95,7 @@ module.exports = async function commit (user, message, files) {
 
     await updateRef('heads/master', newCommit)
 
-    return newCommit.sha
+    return newCommit
   } catch (err) {
     if (err.response) console.error(err.response.body)
     throw err
