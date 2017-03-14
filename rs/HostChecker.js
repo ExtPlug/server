@@ -27,7 +27,9 @@ module.exports = class HostChecker {
 
   check () {
     if (this.queue.length === 0) {
-      return
+      // There's no way to leave a room that I know of, so the bot will go back
+      // to a default room when there is no work to be done.
+      return this.mp.join('extplug')
     }
 
     const {
@@ -37,9 +39,9 @@ module.exports = class HostChecker {
       reject
     } = this.queue.shift()
 
-    this.checkRoom(room, user)
+    return this.checkRoom(room, user)
       .then(resolve)
       .catch(reject)
-      .then(() => { this.check() })
+      .then(() => this.check())
   }
 }
