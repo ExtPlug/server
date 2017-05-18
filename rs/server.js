@@ -72,17 +72,44 @@ async function getRoomFile (room, filename) {
   return Buffer.from(body.content, 'base64').toString('utf8')
 }
 
+async function getHistory (room) {
+  const url = `repos/${ghRepo}/commits`
+  const { body } = await gh(url, {
+    token: ghToken,
+    query: { path: room }
+  })
+
+  function getUserId (user) {
+    return parseInt(user.email.replace(/^user\.(\d+)@extplug\.com$/, '$1'), 10)
+  }
+
+  return body.map((change) => ({
+    id: change.sha,
+    message: change.commit.message,
+    user: getUserId(change.commit.author),
+    time: new Date(change.commit.author.date).getTime()
+  }))
+}
+
 const parseUrl = (reqUrl) => {
   const parts = url.parse(reqUrl)
   const ext = path.extname(parts.pathname)
   const roomName = parts.pathname.slice(1)
   if (ext) {
-    return Object.assign(parts, {
+    Object.assign(parts, {
       ext,
       roomName: path.parse(roomName).name
     })
+  } else {
+    Object.assign(parts, { roomName: roomName })
   }
-  return Object.assign(parts, { roomName: roomName })
+
+  if (/\/history$/.test(parts.roomName)) {
+    parts.action = 'history'
+    parts.roomName = parts.roomName.split('/')[0]
+  }
+
+  return parts
 }
 
 module.exports = async (req, res) => {
@@ -96,7 +123,7 @@ module.exports = async (req, res) => {
     return tryAuthenticate(params, req, res)
   }
 
-  const { ext, roomName, query } = parseUrl(req.url)
+  const { ext, roomName, query, action } = parseUrl(req.url)
 
   if (!roomName) {
     return send(res, 404, null)
@@ -128,6 +155,10 @@ module.exports = async (req, res) => {
   }
 
   if (req.method === 'GET') {
+    if (action === 'history') {
+      return getHistory(roomName)
+    }
+
     if (ext === '.css') {
       res.setHeader('content-type', 'text/css')
       return getRoomFile(roomName,
