@@ -17,9 +17,9 @@
     "micro": "^7.1.0",
     "miniplug": "^1.5.0",
     "plug-auth-server": "^1.1.0",
-    "postcss": "^5.2.16",
+    "postcss": "^6.0.1",
     "postcss-cssnext": "^2.9.0",
-    "postcss-safe-parser": "^2.0.0",
+    "postcss-safe-parser": "^3.0.0",
     "raw-body": "^2.2.0"
   }
 }
