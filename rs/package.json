@@ -12,14 +12,14 @@
   "dependencies": {
     "await-lock": "^1.1.2",
     "cssnano": "^3.10.0",
-    "gh-got": "^5.0.0",
+    "gh-got": "^6.0.0",
     "json-stringify-pretty-compact": "^1.0.2",
-    "micro": "^7.1.0",
-    "miniplug": "^1.5.0",
-    "plug-auth-server": "^1.1.0",
-    "postcss": "^6.0.1",
+    "micro": "^9.0.0",
+    "miniplug": "^1.12.0",
+    "plug-auth-server": "^1.1.2",
+    "postcss": "^6.0.13",
     "postcss-cssnext": "^2.9.0",
-    "postcss-safe-parser": "^3.0.0",
-    "raw-body": "^2.2.0"
+    "postcss-safe-parser": "^3.0.1",
+    "raw-body": "^2.3.2"
   }
 }
