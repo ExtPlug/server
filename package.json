@@ -5,9 +5,13 @@
   "devDependencies": {
     "eslint": "^3.5.0",
     "eslint-config-airbnb-base": "^7.1.0",
-    "eslint-plugin-import": "^1.15.0"
+    "eslint-plugin-import": "^1.15.0",
+    "pkg": "^4.2.5"
   },
   "scripts": {
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "pkg:rs": "pkg rs/ -t node8-linux -o dist/extplug-rs",
+    "pkg:proxy": "pkg proxy/ -t node8-linux -o dist/extplug-proxy",
+    "pkg": "npm run pkg:rs && npm run pkg:proxy"
   }
 }

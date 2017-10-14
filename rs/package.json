@@ -22,5 +22,13 @@
     "postcss-cssnext": "^3.0.2",
     "postcss-safe-parser": "^3.0.1",
     "raw-body": "^2.3.2"
+  },
+  "pkg": {
+    "assets": [
+      "node_modules/svgo/.svgo.yml"
+    ],
+    "scripts": [
+      "node_modules/svgo/**/*.js"
+    ]
   }
 }

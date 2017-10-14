@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const cors = require('cors-anywhere')
 const path = require('path')
 

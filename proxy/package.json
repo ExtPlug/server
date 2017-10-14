@@ -2,6 +2,7 @@
   "name": "@extplug/cors-proxy",
   "version": "1.0.1",
   "description": "The default ExtPlug CORS Proxy.",
+  "bin": "server.js",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
