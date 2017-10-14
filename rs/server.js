@@ -12,6 +12,16 @@ const commit = require('./commit')
 const ghToken = process.env.GITHUB_TOKEN
 const ghRepo = 'extplug/faerss'
 
+if (!ghToken) {
+  throw new Error(`Must specify a Github API token with access to ${ghRepo} in the GITHUB_TOKEN environment variable.`)
+}
+if (!process.env.PLUG_EMAIL || !process.env.PLUG_PASSWORD) {
+  throw new Error('Must specify plug.dj account credentials in the PLUG_EMAIL and PLUG_PASSWORD environment variables.')
+}
+if (!process.env.SECRET) {
+  throw new Error('Must specify a session secret in the SECRET environment variable.')
+}
+
 const engine = authenticator({
   auth: { email: process.env.PLUG_EMAIL, password: process.env.PLUG_PASSWORD },
   secret: Buffer.from(process.env.SECRET, 'hex')
