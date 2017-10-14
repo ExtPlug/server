@@ -18,7 +18,7 @@
     "miniplug": "^1.12.0",
     "plug-auth-server": "^1.1.2",
     "postcss": "^6.0.13",
-    "postcss-cssnext": "^2.9.0",
+    "postcss-cssnext": "^3.0.2",
     "postcss-safe-parser": "^3.0.1",
     "raw-body": "^2.3.2"
   }
